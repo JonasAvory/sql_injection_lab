@@ -1,0 +1,21 @@
+<!-- Note: this file is mainly AI-generated. -->
+{% extends "base.html" %}
+
+{% block title %}Level 2 — Website Deletion{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-3">Website Deletion</h1>
+
+    <p class="text-muted">
+        Demo only &mdash; nothing is actually deleted. This screen just shows that
+        an attacker who reached admin (via the UNION injection) could trigger a
+        destructive, admin-only action.
+    </p>
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Log</label>
+        <pre class="bg-black text-success p-3 rounded mb-0">{{ log_line }}</pre>
+    </div>
+
+    <a href="/2" class="btn btn-secondary">Back to Level 2</a>
+{% endblock %}

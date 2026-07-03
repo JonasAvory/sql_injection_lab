@@ -1,0 +1,84 @@
+<!-- Note: this file is mainly AI-generated. -->
+{% extends "base.html" %}
+
+{% block title %}Level 1.2 — Login Bypass (password checked first){% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-3">Level 1.2 — Login Bypass (password checked first)</h1>
+
+    <p class="text-muted">
+        The <code>WHERE</code> clause is <code>password = '...' AND username = '...'</code>
+        &mdash; the password is compared <em>before</em> the username. So
+        <code>admin' -- </code> only comments out what comes after the username,
+        leaving the password check active, and it fails. You must use
+        <code>OR</code> instead. But note <code>OR '1'='1</code> matches
+        <em>every</em> row, so the app just returns the first one (not necessarily
+        the account you want). To target a specific account, scope the
+        <code>OR</code> to it, e.g. <code>x' OR username='admin</code>.
+    </p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Log in</div>
+        <div class="card-body">
+            <form method="get" action="/1.2" class="row g-3">
+                <div class="col-md-5">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="text" class="form-control" id="password" name="password" value="{{ password }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Log in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Executed query</label>
+        <pre class="bg-dark text-light p-3 rounded"><code>{{ query }}</code></pre>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-warning">
+            <h2 class="h5">Error</h2>
+            <pre class="mb-0">{{ "An error has occured." }}</pre>
+        </div>
+    {% elif user %}
+        <div class="alert alert-success">
+            <h2 class="h5 mb-1">Access granted</h2>
+            Logged in as <strong>{{ user.username }}</strong> (id {{ user.id }}, role: {{ user.role }}).
+        </div>
+
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white fw-semibold">Private account details</div>
+            <div class="card-body">
+                <table class="table table-sm table-bordered mb-0">
+                    <tbody>
+                        <tr><th class="w-25">Password</th><td>{{ user.password }}</td></tr>
+                        <tr><th>Email</th><td>{{ user.email }}</td></tr>
+                        <tr><th>Phone</th><td>{{ user.phone }}</td></tr>
+                        <tr><th>Date of birth</th><td>{{ user.date_of_birth }}</td></tr>
+                        <tr><th>SSN</th><td>{{ user.ssn }}</td></tr>
+                        <tr><th>Credit card</th><td>{{ user.credit_card }}</td></tr>
+                        <tr><th>Salary</th><td>{{ user.salary }}</td></tr>
+                        <tr><th>Home address</th><td>{{ user.home_address }}</td></tr>
+                        <tr><th>API key</th><td>{{ user.api_key }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h2 class="h5 mb-0">Access denied</h2>
+            <span>Invalid username or password.</span>
+        </div>
+    {% endif %}
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Route source</label>
+        <pre class="bg-dark text-light p-3 rounded"><code>{{ code }}</code></pre>
+    </div>
+{% endblock %}

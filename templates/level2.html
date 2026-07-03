@@ -1,0 +1,72 @@
+<!-- Note: this file is mainly AI-generated. -->
+{% extends "base.html" %}
+
+{% block title %}Level 2 — Login Bypass (password verified){% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-3">Level 2 — Login Bypass (password verified)</h1>
+
+    <p class="text-muted">
+        The SQL only looks the user up by name; the password is verified in
+        application code, so the <code>OR</code>/comment bypass no longer works.
+        A UNION injection that fabricates a matching row &mdash; and sets the
+        admin flag &mdash; still does, unlocking the admin-only action below.
+    </p>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Log in</div>
+        <div class="card-body">
+            <form method="get" action="/2" class="row g-3">
+                <div class="col-md-5">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ username }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="text" class="form-control" id="password" name="password" value="{{ password }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Log in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Executed query</label>
+        <pre class="bg-dark text-light p-3 rounded"><code>{{ query }}</code></pre>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-warning">
+            <h2 class="h5">Error</h2>
+            <pre class="mb-0">{{ error }}</pre>
+        </div>
+    {% elif user %}
+        <div class="alert alert-success">
+            <h2 class="h5 mb-1">Access granted</h2>
+            Logged in as <strong>{{ user.username }}</strong> (id {{ user.id }}, role: {{ user.role }}).
+        </div>
+
+        {% if user.is_admin %}
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white fw-semibold">Admin controls</div>
+            <div class="card-body">
+                <form method="post" action="/2/delete">
+                    <button type="submit" class="btn btn-danger btn-lg">DELETE WEBSITE</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-danger">
+            <h2 class="h5 mb-0">Access denied</h2>
+            <span>Invalid username or password.</span>
+        </div>
+    {% endif %}
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Route source</label>
+        <pre class="bg-dark text-light p-3 rounded"><code>{{ code }}</code></pre>
+    </div>
+{% endblock %}

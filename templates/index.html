@@ -1,0 +1,41 @@
+<!-- Note: this file is mainly AI-generated. -->
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="p-4 mb-4 bg-white rounded-3 shadow-sm">
+        <h1 class="display-6">SQL Injection Lab</h1>
+        <p class="lead mb-0">A hands-on lab of intentionally vulnerable endpoints.
+            Each level below is exploitable with basic SQL injection.</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">Levels</div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Level</th>
+                        <th>Route</th>
+                        <th>Exploit (paste into the input)</th>
+                        <th>What it reveals</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for level in levels %}
+                    <tr style="cursor: pointer;" onclick="window.location='{{ level.path }}'">
+                        <td class="fw-semibold">{{ level.label }}. {{ level.name }}</td>
+                        <td class="font-monospace">{{ level.path }}</td>
+                        <td onclick="event.stopPropagation()">
+                            <details class="border rounded bg-secondary-subtle p-2">
+                                <summary class="text-secondary" style="cursor: pointer;">Reveal exploit</summary>
+                                <code class="text-danger">{{ level.exploit }}</code>
+                            </details>
+                        </td>
+                        <td style="white-space: pre-line;">{{ level.reveals }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
