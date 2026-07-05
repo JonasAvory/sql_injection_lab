@@ -22,7 +22,7 @@ def get_db_connection(database):
 
 
 def run_query(query):
-    conn = get_db_connection("level1")
+    conn = get_db_connection("lab")
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute(query)
     results = cursor.fetchall()
@@ -38,7 +38,7 @@ LEVELS = [
         "name": "Login Bypass",
         "exploit": "username = admin' -- ",
         "reveals": "Authenticate as admin with no password, then leak that "
-                   "account's private data (email, SSN, credit card, salary, API key).",
+                   "account's private data (IBAN).",
     },
     {
         "label": "1.2",
@@ -53,8 +53,7 @@ LEVELS = [
         "label": "2",
         "path": "/2",
         "name": "Login Bypass with Password Check",
-        "exploit": "username = ' UNION SELECT 1,'x','pwned','admin','','','2000-01-01','','',0,'','',1 -- "
-                   "  (with password = pwned)",
+        "exploit": "username = ' UNION SELECT 1,'x','passwd','admin','',1",
         "reveals": "The Password is now checked by the python code, so you can't exploit this - or can you?",
     },
     {
@@ -80,12 +79,16 @@ def login_bypass():
     password = request.args.get('password', '')
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     print(query)
-    user = None
+    rows = []
+    columns = []
     error = None
     try:
         rows = run_query(query)
+        # Render whatever comes back generically: the column headers are taken
+        # from the result itself, so a UNION SELECT against information_schema
+        # (table names, column names, ...) is printed just like normal rows.
         if rows:
-            user = rows[0]
+            columns = list(rows[0].keys())
     except Exception as e:
         error = str(e)
 
@@ -93,7 +96,8 @@ def login_bypass():
                            username=username,
                            password=password,
                            query=query,
-                           user=user,
+                           rows=rows,
+                           columns=columns,
                            error=error,
                            code=inspect.getsource(login_bypass))
 
@@ -105,12 +109,15 @@ def login_bypass_reordered():
     # Same vulnerability as level 1, but password is compared before username.
     query = f"SELECT * FROM users WHERE password = '{password}' AND username = '{username}'"
     print(query)
-    user = None
+    rows = []
+    columns = []
     error = None
     try:
         rows = run_query(query)
+        # Generic rendering: headers come from the result, so a UNION SELECT
+        # against information_schema is printed just like normal rows.
         if rows:
-            user = rows[0]
+            columns = list(rows[0].keys())
     except Exception as e:
         error = str(e)
 
@@ -118,7 +125,8 @@ def login_bypass_reordered():
                            username=username,
                            password=password,
                            query=query,
-                           user=user,
+                           rows=rows,
+                           columns=columns,
                            error=error,
                            code=inspect.getsource(login_bypass_reordered))
 
@@ -170,7 +178,7 @@ def safe_login():
     error = None
     bound_query = None
     try:
-        conn = get_db_connection("level1")
+        conn = get_db_connection("lab")
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         # The values are passed to execute() separately from the SQL text and
         # bound to the %s placeholders, so input can never change the query.
