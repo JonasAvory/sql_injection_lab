@@ -15,7 +15,7 @@
     </p>
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div class="col-lg-6">
             <div class="card shadow-sm mb-4">
                 <div class="card-header fw-semibold">Log in</div>
                 <div class="card-body">
@@ -35,6 +35,7 @@
                 </div>
             </div>
 
+            {% if submitted %}
             {% if error %}
                 <div class="alert alert-warning">
                     <h2 class="h5">Error</h2>
@@ -51,8 +52,9 @@
                     <span>Invalid username or password — the injection was neutralized.</span>
                 </div>
             {% endif %}
+            {% endif %}
 
-            <details class="card dev-panel shadow-sm mt-4" open>
+            <details class="card dev-panel shadow-sm mt-4">
                 <summary class="card-header fw-semibold user-select-none" style="cursor: pointer;">
                     Query sent to the database (after binding) <span class="fw-normal small">(not shown to real users)</span>
                 </summary>
@@ -60,7 +62,7 @@
             </details>
         </div>
 
-        <div class="col-lg-5">
+        <div class="col-lg-6">
             <details class="card dev-panel shadow-sm">
                 <summary class="card-header fw-semibold user-select-none" style="cursor: pointer;">
                     Route source <span class="fw-normal small">(not shown to real users)</span>

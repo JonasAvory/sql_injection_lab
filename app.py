@@ -75,6 +75,7 @@ def index():
 
 @app.route('/1')
 def login_bypass():
+    submitted = 'username' in request.args
     username = request.args.get('username', '')
     password = request.args.get('password', '')
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
@@ -82,18 +83,20 @@ def login_bypass():
     rows = []
     columns = []
     error = None
-    try:
-        rows = run_query(query)
-        # Render whatever comes back generically: the column headers are taken
-        # from the result itself, so a UNION SELECT against information_schema
-        # (table names, column names, ...) is printed just like normal rows.
-        if rows:
-            columns = list(rows[0].keys())
-    except Exception as e:
-        error = str(e)
+    if submitted:
+        try:
+            rows = run_query(query)
+            # Render whatever comes back generically: the column headers are taken
+            # from the result itself, so a UNION SELECT against information_schema
+            # (table names, column names, ...) is printed just like normal rows.
+            if rows:
+                columns = list(rows[0].keys())
+        except Exception as e:
+            error = str(e)
         logger.error("SQL error: %s", e)
 
     return render_template('level1.html',
+                           submitted=submitted,
                            username=username,
                            password=password,
                            query=query,
@@ -105,6 +108,7 @@ def login_bypass():
 
 @app.route('/1.2')
 def login_bypass_reordered():
+    submitted = 'username' in request.args
     username = request.args.get('username', '')
     password = request.args.get('password', '')
     # Same vulnerability as level 1, but password is compared before username.
@@ -113,17 +117,19 @@ def login_bypass_reordered():
     rows = []
     columns = []
     error = None
-    try:
-        rows = run_query(query)
-        # Generic rendering: headers come from the result, so a UNION SELECT
-        # against information_schema is printed just like normal rows.
-        if rows:
-            columns = list(rows[0].keys())
-    except Exception as e:
-        error = str(e)
+    if submitted:
+        try:
+            rows = run_query(query)
+            # Generic rendering: headers come from the result, so a UNION SELECT
+            # against information_schema is printed just like normal rows.
+            if rows:
+                columns = list(rows[0].keys())
+        except Exception as e:
+            error = str(e)
         logger.error("SQL error: %s", e)
 
     return render_template('level1_2.html',
+                           submitted=submitted,
                            username=username,
                            password=password,
                            query=query,
@@ -135,6 +141,7 @@ def login_bypass_reordered():
 
 @app.route('/2')
 def login_bypass_union():
+    submitted = 'username' in request.args
     username = request.args.get('username', '')
     password = request.args.get('password', '')
     # SQL only looks the user up by name; the password is verified in app code.
@@ -142,15 +149,17 @@ def login_bypass_union():
     print(query)
     user = None
     error = None
-    try:
-        rows = run_query(query)
-        if rows and rows[0].get('password') == password:
-            user = rows[0]
-    except Exception as e:
-        error = str(e)
+    if submitted:
+        try:
+            rows = run_query(query)
+            if rows and rows[0].get('password') == password:
+                user = rows[0]
+        except Exception as e:
+            error = str(e)
         logger.error("SQL error: %s", e)
 
     return render_template('level2.html',
+                           submitted=submitted,
                            username=username,
                            password=password,
                            query=query,
@@ -170,6 +179,7 @@ def delete_website():
 
 @app.route('/safe')
 def safe_login():
+    submitted = 'username' in request.args
     username = request.args.get('username', '')
     password = request.args.get('password', '')
     # Parameterized query: the values are sent to the DB separately from the
@@ -180,23 +190,25 @@ def safe_login():
     user = None
     error = None
     bound_query = None
-    try:
-        conn = get_db_connection("lab")
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
-        # The values are passed to execute() separately from the SQL text and
-        # bound to the %s placeholders, so input can never change the query.
-        bound_query = cursor.mogrify(query, (username, password))
-        cursor.execute(query, (username, password))
-        rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        if rows:
-            user = rows[0]
-    except Exception as e:
-        error = str(e)
+    if submitted:
+        try:
+            conn = get_db_connection("lab")
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+            # The values are passed to execute() separately from the SQL text and
+            # bound to the %s placeholders, so input can never change the query.
+            bound_query = cursor.mogrify(query, (username, password))
+            cursor.execute(query, (username, password))
+            rows = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            if rows:
+                user = rows[0]
+        except Exception as e:
+            error = str(e)
         logger.error("SQL error: %s", e)
 
     return render_template('safe.html',
+                           submitted=submitted,
                            username=username,
                            password=password,
                            bound_query=bound_query,
