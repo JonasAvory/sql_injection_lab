@@ -1,5 +1,5 @@
 -- Seed data for the SQL-injection lab.
--- Creates the `level1` database, a `products` table, sample rows,
+-- Creates the `lab` database, a `users` table, sample rows,
 -- and a low-privilege lab user used by get_db_connection().
 
 CREATE DATABASE IF NOT EXISTS lab;

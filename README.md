@@ -52,7 +52,7 @@ source .venv/bin/activate
 pip install flask pymysql
 ```
 
-Seed the database (creates the `level1` DB, the `users` table, and the `labuser` account used by the app):
+Seed the database (creates the `lab` DB, the `users` table, and the `labuser` account used by the app):
 
 ```sh
 sudo mariadb < seed.sql

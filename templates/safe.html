@@ -22,7 +22,7 @@
                     <form method="get" action="/safe" class="row g-3">
                         <div class="col-md-5">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ username }}">
+                            <textarea class="form-control autogrow" id="username" name="username" rows="1" style="resize: none; overflow: hidden;">{{ username }}</textarea>
                         </div>
                         <div class="col-md-5">
                             <label for="password" class="form-label">Password</label>
@@ -56,7 +56,7 @@
                 <summary class="card-header fw-semibold user-select-none" style="cursor: pointer;">
                     Query sent to the database (after binding) <span class="fw-normal small">(not shown to real users)</span>
                 </summary>
-                <pre class="bg-dark text-light p-3 mb-0 rounded-bottom"><code>{{ bound_query }}</code></pre>
+                <pre class="wrap bg-dark text-light p-3 mb-0 rounded-bottom"><code>{{ bound_query }}</code></pre>
             </details>
         </div>
 

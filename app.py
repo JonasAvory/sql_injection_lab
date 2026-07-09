@@ -91,6 +91,7 @@ def login_bypass():
             columns = list(rows[0].keys())
     except Exception as e:
         error = str(e)
+        logger.error("SQL error: %s", e)
 
     return render_template('level1.html',
                            username=username,
@@ -120,6 +121,7 @@ def login_bypass_reordered():
             columns = list(rows[0].keys())
     except Exception as e:
         error = str(e)
+        logger.error("SQL error: %s", e)
 
     return render_template('level1_2.html',
                            username=username,
@@ -146,6 +148,7 @@ def login_bypass_union():
             user = rows[0]
     except Exception as e:
         error = str(e)
+        logger.error("SQL error: %s", e)
 
     return render_template('level2.html',
                            username=username,
@@ -191,6 +194,7 @@ def safe_login():
             user = rows[0]
     except Exception as e:
         error = str(e)
+        logger.error("SQL error: %s", e)
 
     return render_template('safe.html',
                            username=username,

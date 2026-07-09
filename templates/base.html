@@ -35,13 +35,18 @@
         .dev-panel[open] > summary {
             border-bottom: 1px solid #c9a86a;
         }
+        /* Wrap long executed-query text so it grows downward and stays fully
+           visible instead of overflowing horizontally. */
+        .dev-panel pre.wrap {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
     </style>
 </head>
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-xxl">
             <a class="navbar-brand" href="/">SQL Injection Lab</a>
-            <span class="navbar-text text-warning small">intentionally vulnerable — for learning only</span>
         </div>
     </nav>
 
@@ -49,8 +54,26 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="container-xxl text-center text-muted small py-4 border-top mt-4">
-        All data is fake example data.
-    </footer>
+    <script>
+        // Auto-growing text fields: any <textarea class="autogrow"> expands
+        // downward as you type so long injection payloads stay fully visible.
+        // Enter still submits the form (Shift+Enter inserts a newline).
+        function autogrow(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('textarea.autogrow').forEach(function (el) {
+                autogrow(el);
+                el.addEventListener('input', function () { autogrow(el); });
+                el.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        el.form.requestSubmit();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
