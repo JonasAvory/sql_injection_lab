@@ -57,6 +57,15 @@ LEVELS = [
         "reveals": "The Password is now checked by the python code, so you can't exploit this - or can you?",
     },
     {
+        "label": "3",
+        "path": "/3",
+        "name": "Boolean-based Blind Injection",
+        "exploit": "username = admin' AND SUBSTRING(password,1,1)='s' -- ",
+        "reveals": "The page never shows row data now — only Access granted/denied.\n"
+                   "That single bit is still enough: ask true/false questions about "
+                   "admin's password one character at a time and rebuild it.",
+    },
+    {
         "label": "safe",
         "path": "/safe",
         "name": "Fixed — Parameterized Query",
@@ -166,6 +175,32 @@ def delete_website():
     return render_template('level2_delete.html',
                            log_line="starting website deletion...")
 
+
+@app.route('/3')
+def login_bypass_blind():
+    username = request.args.get('username', '')
+    password = request.args.get('password', '')
+    # Same injectable string-building as level 1, but the response below
+    # only ever reveals granted/denied — never row data or the raw SQL
+    # error — so the only usable signal is that single boolean.
+    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+    print(query)
+    granted = False
+    error = None
+    try:
+        rows = run_query(query)
+        granted = bool(rows)
+    except Exception as e:
+        error = str(e)
+        logger.error("SQL error: %s", e)
+
+    return render_template('level3.html',
+                           username=username,
+                           password=password,
+                           query=query,
+                           granted=granted,
+                           error=error,
+                           code=inspect.getsource(login_bypass_blind))
 
 
 @app.route('/safe')

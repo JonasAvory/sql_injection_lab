@@ -1,0 +1,78 @@
+<!-- Note: this file is mainly AI-generated. -->
+{% extends "base.html" %}
+
+{% block title %}Level 3 — Boolean-based Blind Injection{% endblock %}
+
+{% block content %}
+    <h1 class="h3 mb-3">Level 3 — Boolean-based Blind Injection</h1>
+
+    <p class="text-muted">
+        Same injectable login as level 1, but this time the response never
+        shows row data or the raw SQL error &mdash; only whether access was
+        granted or denied. That single bit is still an oracle: ask a
+        true/false question about the data and read the answer off the
+        alert box.
+    </p>
+    <ul class="text-muted small">
+        <li>Is the password's first letter <code>'s'</code>?
+            <code>admin' AND SUBSTRING(password,1,1)='s' -- </code></li>
+        <li>Is the password longer than 5 characters?
+            <code>admin' AND LENGTH(password)&gt;5 -- </code></li>
+        <li>Binary-search each character's ASCII code to recover the whole
+            password without ever seeing it directly:
+            <code>admin' AND ASCII(SUBSTRING(password,1,1))&gt;100 -- </code></li>
+    </ul>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header fw-semibold">Log in</div>
+                <div class="card-body">
+                    <form method="get" action="/3" class="row g-3">
+                        <div class="col-md-5">
+                            <label for="username" class="form-label">Username</label>
+                            <textarea class="form-control autogrow" id="username" name="username" rows="1" style="resize: none; overflow: hidden;">{{ username }}</textarea>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="text" class="form-control" id="password" name="password" value="{{ password }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Log in</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if granted %}
+                <div class="alert alert-success">
+                    <h2 class="h5 mb-0">Access granted</h2>
+                </div>
+            {% else %}
+                <div class="alert alert-danger">
+                    <h2 class="h5 mb-0">Access denied</h2>
+                    <span>Invalid username or password{{ " (or a SQL error occurred)" if error else "" }}.</span>
+                </div>
+            {% endif %}
+
+            <details class="card dev-panel shadow-sm mt-4" open>
+                <summary class="card-header fw-semibold user-select-none" style="cursor: pointer;">
+                    Executed query <span class="fw-normal small">(not shown to real users)</span>
+                </summary>
+                <pre class="wrap bg-dark text-light p-3 mb-0 rounded-bottom"><code>{{ query }}</code></pre>
+                {% if error %}
+                <pre class="wrap bg-dark text-warning p-3 mb-0"><code>{{ error }}</code></pre>
+                {% endif %}
+            </details>
+        </div>
+
+        <div class="col-lg-5">
+            <details class="card dev-panel shadow-sm">
+                <summary class="card-header fw-semibold user-select-none" style="cursor: pointer;">
+                    Route source <span class="fw-normal small">(not shown to real users)</span>
+                </summary>
+                <pre class="bg-dark text-light p-3 mb-0 rounded-bottom"><code>{{ code }}</code></pre>
+            </details>
+        </div>
+    </div>
+{% endblock %}
