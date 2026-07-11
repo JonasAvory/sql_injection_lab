@@ -205,7 +205,7 @@ def safe_login():
                 user = rows[0]
         except Exception as e:
             error = str(e)
-        logger.error("SQL error: %s", e)
+            logger.error("SQL error: %s", e)
 
     return render_template('safe.html',
                            submitted=submitted,
