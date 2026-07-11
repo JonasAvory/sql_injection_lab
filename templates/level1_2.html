@@ -56,13 +56,13 @@
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        {% for col in columns %}<th>{{ "Adminrechte" if col == "is_admin" else col }}</th>{% endfor %}
+                                        {% for col in columns if col != 'secret' %}<th>{{ "Adminrechte" if col == "is_admin" else col }}</th>{% endfor %}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for row in rows %}
                                     <tr>
-                                        {% for col in columns %}<td>{{ row[col] }}</td>{% endfor %}
+                                        {% for col in columns if col != 'secret' %}<td>{{ row[col] }}</td>{% endfor %}
                                     </tr>
                                     {% endfor %}
                                 </tbody>

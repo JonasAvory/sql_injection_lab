@@ -1,6 +1,7 @@
 -- Seed data for the SQL-injection lab.
 -- Creates the `lab` database, a `users` table, sample rows,
 -- and a low-privilege lab user used by get_db_connection().
+-- contains AI-generated Code
 
 CREATE DATABASE IF NOT EXISTS lab;
 
@@ -19,6 +20,7 @@ CREATE TABLE users (
     username VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
     iban     VARCHAR(50),
+    secret   VARCHAR(255),
     is_admin TINYINT(1)   NOT NULL DEFAULT 0
 );
 
@@ -28,8 +30,8 @@ CREATE TABLE users (
 -- count you need for the UNION SELECT schema-discovery step.
 -- A dummy row is inserted first so it gets the lowest id. This way the
 -- "OR '1'='1" ordering-luck exploit returns this boring row (row 0), not admin.
-INSERT INTO users (username, password, iban, is_admin) VALUES
-    ('admin', 's3cr3t_p@ss',  'DE00 2345 6789 0123 4567 89',  1),
-    ('alice', 'alicepw',      'DE00 1111 1111 1111 1111 11',  0),
-    ('bob',   'password',        'DE00 2222 2222 2222 2222 22',  0),
-    ('Max',   'password',     'DE00 3333 3333 3333 3333 33',  0);
+INSERT INTO users (username, password, iban, secret, is_admin) VALUES
+    ('admin', 's3cr3t_p@ss',  'DE00 2345 6789 0123 4567 89',  'launch code: ALPHA-ZULU-9931',        1),
+    ('alice', 'alicepw',      'DE00 1111 1111 1111 1111 11',  'diary password: sunflower1990',       0),
+    ('bob',   'password',        'DE00 2222 2222 2222 2222 22',  'offshore account: CH55 0000 1234',   0),
+    ('Max',   'password',     'DE00 3333 3333 3333 3333 33',  'affair with the neighbour, apt 4B',   0);
