@@ -167,7 +167,7 @@ def login_bypass_union():
                 user = rows[0]
         except Exception as e:
             error = str(e)
-        logger.error("SQL error: %s", e)
+            logger.error("SQL error: %s", e)
 
     return render_template('level2.html',
                            submitted=submitted,

@@ -43,7 +43,7 @@
             {% elif user %}
                 <div class="alert alert-success">
                     <h2 class="h5 mb-1">Access granted</h2>
-                    Logged in as <strong>{{ user.username }}</strong> (id {{ user.id }}, role: {{ user.role }}).
+                    Logged in as <strong>{{ user.username }}</strong>.
                 </div>
 
                 {% if user.is_admin %}
@@ -54,6 +54,10 @@
                             <button type="submit" class="btn btn-danger btn-lg">DELETE WEBSITE</button>
                         </form>
                     </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    You are logged in as a normal user &mdash; no admin privileges, so the admin controls are hidden.
                 </div>
                 {% endif %}
             {% else %}
