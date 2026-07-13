@@ -49,7 +49,7 @@ source .venv/bin/activate
 ## Install Python dependencies:
 
 ```sh
-pip install flask pymysql
+pip install flask pymysql mysql-connector-python
 ```
 
 Seed the database (creates the `lab` DB, the `users` table, and the `labuser` account used by the app):

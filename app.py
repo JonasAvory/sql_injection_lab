@@ -1,6 +1,7 @@
 import inspect
 import logging
 
+import mysql.connector
 import pymysql
 from flask import Flask, render_template, request
 
@@ -69,10 +70,11 @@ LEVELS = [
         "label": "safe",
         "path": "/safe",
         "name": "Fixed — Parameterized Query",
-        "exploit": "username = admin' --      (try it — it no longer works)",
-        "reveals": "The fix: user input is bound to %s placeholders instead of being "
-                   "formatted into the SQL string, so injection payloads are escaped "
-                   "and treated as literal text. The page shows the bound query.",
+        "exploit": "username = admin' AND SUBSTRING(password,1,1)='s' --      (try it — it no longer works)",
+        "reveals": "The fix for the boolean-blind level: user input is bound to %s "
+                   "placeholders instead of being formatted into the SQL string, so "
+                   "injection payloads are escaped and treated as literal text. The "
+                   "page shows the bound query.",
     },
 ]
 
@@ -214,41 +216,66 @@ def login_bypass_blind():
 
 @app.route('/safe')
 def safe_login():
-    submitted = 'username' in request.args
     username = request.args.get('username', '')
     password = request.args.get('password', '')
-    # Parameterized query: the values are sent to the DB separately from the
-    # SQL text and bound to the %s placeholders, so input can never change the
-    # query structure. This closes the injection entirely.
+    # A real server-side prepared statement. This query text - still with %s
+    # placeholders, never string-formatted - is sent to MariaDB and parsed
+    # EXACTLY ONCE via COM_STMT_PREPARE. username/password are then sent
+    # afterwards, separately, as typed binary values via COM_STMT_EXECUTE.
+    # The server has already finished parsing the query before it ever sees
+    # the parameter bytes, so there is no SQL text for an injection payload
+    # to reshape - unlike PyMySQL's %s, which is substituted into the query
+    # string on the client before it's sent.
+    # https://mariadb.com/docs/server/reference/clientserver-protocol/3-binary-protocol-prepared-statements/com_stmt_prepare
+    # https://mariadb.com/docs/server/reference/clientserver-protocol/3-binary-protocol-prepared-statements/com_stmt_execute
     query = "SELECT * FROM users WHERE username = %s AND password = %s"
     print(query)
-    user = None
+    granted = False
     error = None
-    bound_query = None
-    if submitted:
-        try:
-            conn = get_db_connection("lab")
-            cursor = conn.cursor(pymysql.cursors.DictCursor)
-            # The values are passed to execute() separately from the SQL text and
-            # bound to the %s placeholders, so input can never change the query.
-            bound_query = cursor.mogrify(query, (username, password))
-            cursor.execute(query, (username, password))
-            rows = cursor.fetchall()
-            cursor.close()
-            conn.close()
-            if rows:
-                user = rows[0]
-        except Exception as e:
-            error = str(e)
-            logger.error("SQL error: %s", e)
+    stmt_stats = None
+    try:
+        conn = mysql.connector.connect(
+            host="127.0.0.1",
+            port=3306,
+            user="labuser",
+            password="labpass",
+            database="lab",
+        )
+        status_cursor = conn.cursor()
+
+        def com_stmt_counts():
+            # These are MariaDB's own per-connection command counters - proof,
+            # not just a claim, that a COM_STMT_PREPARE/COM_STMT_EXECUTE pair
+            # actually happened on the wire for this request.
+            # https://mariadb.com/kb/en/server-status-variables/#com_stmt_prepare
+            status_cursor.execute("SHOW SESSION STATUS LIKE 'Com\\_stmt\\_%'")
+            return {name: int(str(value)) for name, value in status_cursor.fetchall()}
+
+        before = com_stmt_counts()
+        cursor = conn.cursor(prepared=True)
+        cursor.execute(query, (username, password))
+        rows = cursor.fetchall()
+        cursor.close()
+        after = com_stmt_counts()
+
+        status_cursor.close()
+        conn.close()
+        granted = bool(rows)
+        stmt_stats = {
+            "Com_stmt_prepare": (before["Com_stmt_prepare"], after["Com_stmt_prepare"]),
+            "Com_stmt_execute": (before["Com_stmt_execute"], after["Com_stmt_execute"]),
+        }
+    except Exception as e:
+        error = str(e)
+        logger.error("SQL error: %s", e)
 
     return render_template('safe.html',
-                           submitted=submitted,
                            username=username,
                            password=password,
-                           bound_query=bound_query,
-                           user=user,
+                           query=query,
+                           granted=granted,
                            error=error,
+                           stmt_stats=stmt_stats,
                            code=inspect.getsource(safe_login))
 
 if __name__ == '__main__':
